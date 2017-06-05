@@ -1,36 +1,102 @@
 <!DOCTYPE>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-	<link rel="stylesheet" href="css/datepicker.css" type="text/css" />
+  <link rel="stylesheet" href="css/datepicker.css" type="text/css" />
     <link rel="stylesheet" media="screen" type="text/css" href="css/layout.css" />
-	<script type="text/javascript" src="js/jquery.js"></script>
-	<script type="text/javascript" src="js/datepicker.js"></script>
-	<script>
-	$(document).ready(function(){
-		var now = new Date();
-		var now2 = new Date();
-		$('#dateTest').DatePicker({
-			flat: true,
-			date: ['1993-08-14','1993-09-15'],
-			current: '1993-08-14',
-			calendars: 2,
-			mode: 'range',
-			onRender: function(date) {
-				return {
-					disabled: (date.valueOf() < now.valueOf()),
-					className: date.valueOf() == now2.valueOf() ? 'datepickerSpecial' : false
-				}
-			},
-			starts: 1
-		});
-	});
+  <script type="text/javascript" src="js/jquery.js"></script>
+  <script type="text/javascript" src="js/datepicker.js"></script>
+  <script>
+  $(document).ready(function(){
+    var now = new Date();
+    var now2 = new Date();    
+	var jsonVar = [];
+	var srtJson;
+    $('#click').click(function(){
+      var totalDays = parseInt($('#numberDays').val())
+      var finalDate = new Date($('#startDate').val());
+      var startDate = new Date($('#startDate').val());
+        finalDate.setDate(finalDate.getDate() + totalDays);
 		
-	</script>
+			console.log("startDate.getMonth() " + startDate.getMonth());
+			var monthReal = startDate.getMonth() + 1;
+			var jsonURL = "https://holidayapi.com/v1/holidays?key=20dd106a-ad9a-4783-9e17-6420626622fb&country=US&year=" + startDate.getFullYear() + "&month=" + monthReal;
+			var isAHoliday = false;
+			
+			console.log("startDate.getYear() " + startDate.getFullYear())
+			console.log("startDate.getMonth() " + monthReal)
+			jQuery.getJSON(jsonURL, function (data) {
+				if (data.holidays.length > 0) {
+					isAHoliday = true;
+					console.log(data);
+				}			
+				
+				$('#dateTest').DatePicker({
+					flat: true,
+					date: $('#startDate').val() -1,
+					current: $('#startDate').val(),
+					calendars: 1,
+					mode: 'single',
+					onRender: function(date) {
+						var dayOfWeek = date.getUTCDay();
+						var daysColor = 'weekends';
+						var dayDisabled = false;
+						 switch(dayOfWeek) {
+							  case 0:
+								  daysColor = 'weekends';
+								  break;
+							  case 6:
+								  daysColor = 'weekends';
+								  break;
+							  default:
+								  daysColor = 'weekdays';
+						  }
+					  
+						for(var i=0;i<jsonVar.length;i++){
+							var holiday = new Date(jsonVar[i]);
+							var year = holiday.getFullYear();
+							var month = holiday.getMonth() + 1;
+							var day = holiday.getDate() + 1;
+							console.log("DIA: " + day + " MES: " + month + " AÑO: " + year);
+							
+							if(date.valueOf() < holiday.valueOf()){
+								daysColor = 'weekdaysholidays';
+								break;
+							}
+						}	
+					  if(date.valueOf() < startDate.valueOf() || date.valueOf() > finalDate.valueOf()){
+						daysColor = 'weekdaysinvalid';
+						dayDisabled = true;
+					  }
+
+					  return {            
+						disabled: dayDisabled,
+						className: daysColor
+					  }
+					},
+					starts: 0
+				  });
+			});
+    });
+    
+  });
+    
+  </script>
+  <<style type="text/css" media="screen">
+    .weekends {background: yellow;}
+    .weekdaysholidays {background: red;}
+    .weekdays {background: green;}
+    .weekdaysinvalid{background: grey; color:grey;}
+  </style>
 </head>
 <body>
     <div 
 		<h3>Test</h3>
-		<p id="dateTest"></p>
+		<input type="text" name="startDate" id="startDate">
+		<input type="text" name="numberDays" id="numberDays">
+		<input type="text" name="countryCode" id="countryCode">
+		<button type="botton" id="click">Click</button>
+        <p id="dateTest"></p>
+      
     </div>
 </body>
 </html>
