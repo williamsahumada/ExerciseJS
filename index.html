@@ -43,8 +43,9 @@
                     var country = $("#countryCode").val();
                     finalDate.setDate(startDate.getDate() + totalDays - 1);
 
+            
                     var monthReal = startDate.getMonth() + 1;
-                    var jsonURL = "https://holidayapi.com/v1/holidays?key=20dd106a-ad9a-4783-9e17-6420626622fb&country=" + country + "&year=" + startDate.getFullYear() + "&month=" + monthReal;
+                    var jsonURL = "https://holidayapi.com/v1/holidays?key=20dd106a-ad9a-4783-9e17-6420626622fb&country=" + country + "&year=" + startDate.getFullYear();
 					var proxy = 'https://cors-anywhere.herokuapp.com/';
 					var finalURL = proxy + jsonURL;
                     var isAHoliday = false;
@@ -56,9 +57,9 @@
                             console.log(data);
                         }
                         jsonVar = []
-                        data.holidays.forEach(function (item) {
-                            //console.log(item.date);
-                            jsonVar.push(item.date);
+                        Object.keys(data.holidays).forEach(function(key,index)  {
+                            console.log(key  +" - " + index);
+                            jsonVar.push(key);
                         });
                         strJson = data.holidays;
 
