@@ -1,0 +1,36 @@
+<!DOCTYPE>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<link rel="stylesheet" href="css/datepicker.css" type="text/css" />
+    <link rel="stylesheet" media="screen" type="text/css" href="css/layout.css" />
+	<script type="text/javascript" src="js/jquery.js"></script>
+	<script type="text/javascript" src="js/datepicker.js"></script>
+	<script>
+	$(document).ready(function(){
+		var now = new Date();
+		var now2 = new Date();
+		$('#dateTest').DatePicker({
+			flat: true,
+			date: ['1993-08-14','1993-09-15'],
+			current: '1993-08-14',
+			calendars: 2,
+			mode: 'range',
+			onRender: function(date) {
+				return {
+					disabled: (date.valueOf() < now.valueOf()),
+					className: date.valueOf() == now2.valueOf() ? 'datepickerSpecial' : false
+				}
+			},
+			starts: 1
+		});
+	});
+		
+	</script>
+</head>
+<body>
+    <div 
+		<h3>Test</h3>
+		<p id="dateTest"></p>
+    </div>
+</body>
+</html>
