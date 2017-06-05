@@ -1,104 +1,227 @@
 <!DOCTYPE>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <link rel="stylesheet" href="css/datepicker.css" type="text/css" />
-    <link rel="stylesheet" media="screen" type="text/css" href="css/layout.css" />
-  <script type="text/javascript" src="js/jquery.js"></script>
-  <script type="text/javascript" src="js/datepicker.js"></script>
-  <script>
-  $(document).ready(function(){
-    var now = new Date();
-    var now2 = new Date();    
-	var jsonVar = [];
-	var srtJson;
-	
-    $('#click').click(function(){
-      var totalDays = parseInt($('#numberDays').val())
-      var finalDate = new Date($('#startDate').val());
-      var startDate = new Date($('#startDate').val());
-        finalDate.setDate(finalDate.getDate() + totalDays);
-		
-			console.log("startDate.getMonth() " + startDate.getMonth());
-			var monthReal = startDate.getMonth() + 1;
-			var jsonURL = "https://holidayapi.com/v1/holidays?key=20dd106a-ad9a-4783-9e17-6420626622fb&country=US&year=" + startDate.getFullYear() + "&month=" + monthReal;
-			var isAHoliday = false;
-			var proxy = 'https://cors-anywhere.herokuapp.com/';
-			var finalURL = proxy + jsonURL;
-			
-			console.log("startDate.getYear() " + startDate.getFullYear())
-			console.log("startDate.getMonth() " + monthReal)
-			jQuery.getJSON(finalURL, function (data) {
-				if (data.holidays.length > 0) {
-					isAHoliday = true;
-					console.log(data);
-				}			
-				
-				$('#dateTest').DatePicker({
-					flat: true,
-					date: $('#startDate').val() -1,
-					current: $('#startDate').val(),
-					calendars: 1,
-					mode: 'single',
-					onRender: function(date) {
-						var dayOfWeek = date.getUTCDay();
-						var daysColor = 'weekends';
-						var dayDisabled = false;
-						 switch(dayOfWeek) {
-							  case 0:
-								  daysColor = 'weekends';
-								  break;
-							  case 6:
-								  daysColor = 'weekends';
-								  break;
-							  default:
-								  daysColor = 'weekdays';
-						  }
-					  
-						for(var i=0;i<jsonVar.length;i++){
-							var holiday = new Date(jsonVar[i]);
-							var year = holiday.getFullYear();
-							var month = holiday.getMonth() + 1;
-							var day = holiday.getDate() + 1;
-							
-							if(date.valueOf() < holiday.valueOf()){
-								daysColor = 'weekdaysholidays';
-								break;
-							}
-						}	
-					  if(date.valueOf() < startDate.valueOf() || date.valueOf() > finalDate.valueOf()){
-						daysColor = 'weekdaysinvalid';
-						dayDisabled = true;
-					  }
+    <link rel="stylesheet" href="css/datepicker.css" type="text/css"/>
+    <link rel="stylesheet" media="screen" type="text/css" href="css/layout.css"/>
+    <title>UI PROGRAMMING EXERCISE</title>
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/datepicker.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css"/>
 
-					  return {            
-						disabled: dayDisabled,
-						className: daysColor
-					  }
-					},
-					starts: 0
-				  });
-			});
-    });
-    
-  });
-    
-  </script>
-  <<style type="text/css" media="screen">
-    .weekends {background: yellow;}
-    .weekdaysholidays {background: red;}
-    .weekdays {background: green;}
-    .weekdaysinvalid{background: grey; color:grey;}
-  </style>
+    <script>
+        $(document).ready(function () {
+            var now = new Date();
+            var now2 = new Date();
+            var jsonVar = [];
+            var srtJson;
+            $('#click').click(function () {
+                if ($('#startDate').val() == "") {
+                    alert("MANDATORY: Need Start Date!");
+                    $("#startDate").focus();
+                } else if ($('#numberDays').val() == "") {
+                    alert("MANDATORY: Need Number Days!");
+                    $("#numberDays").focus();
+                } else if ($('#countryCode').val() == "") {
+                    alert("MANDATORY: Need Country Code!")
+                    $("#countryCode").focus();
+                } else {
+                    $("#dateTest").html("");
+                    var totalDays = parseInt($('#numberDays').val())
+                    var yearG, monthG, dayG;
+                    if ($('#startDate').val().split("-").length > 1) {
+                        yearG = $('#startDate').val().split("-")[0];
+                        monthG = $('#startDate').val().split("-")[1];
+                        dayG = parseInt($('#startDate').val().split("-")[2]);
+                    } else {
+                        yearG = $('#startDate').val().split("/")[2];
+                        monthG = $('#startDate').val().split("/")[0];
+                        dayG = parseInt($('#startDate').val().split("/")[1]);
+                    }
+
+                    var finalDate = new Date(yearG + "-" + monthG + "-" + dayG);
+                    var startDate = new Date(yearG + "-" + monthG + "-" + dayG);
+                    var country = $("#countryCode").val();
+                    finalDate.setDate(startDate.getDate() + totalDays - 1);
+
+                    var monthReal = startDate.getMonth() + 1;
+                    var jsonURL = "https://holidayapi.com/v1/holidays?key=20dd106a-ad9a-4783-9e17-6420626622fb&country=" + country + "&year=" + startDate.getFullYear() + "&month=" + monthReal;
+					var proxy = 'https://cors-anywhere.herokuapp.com/';
+					var finalURL = proxy + jsonURL;
+                    var isAHoliday = false;
+
+
+                    jQuery.getJSON(finalURL, function (data) {
+                        if (data.holidays.length > 0) {
+                            isAHoliday = true;
+                            console.log(data);
+                        }
+                        jsonVar = []
+                        data.holidays.forEach(function (item) {
+                            //console.log(item.date);
+                            jsonVar.push(item.date);
+                        });
+                        strJson = data.holidays;
+
+                        $('#dateTest').DatePicker({
+                            flat: true,
+                            date: $('#startDate').val() - 1,
+                            current: startDate,
+                            calendars: 1,
+                            mode: 'single',
+                            onRender: function (date) {
+                                var dayOfWeek = date.getUTCDay();
+                                var daysColor = 'weekends';
+                                var dayDisabled = false;
+
+                                switch (dayOfWeek) {
+                                    case 0:
+                                        daysColor = 'weekends';
+                                        break;
+                                    case 6:
+                                        daysColor = 'weekends';
+                                        break;
+                                    default:
+                                        daysColor = 'weekdays';
+                                }
+
+                                for (var i = 0; i < jsonVar.length; i++) {
+                                    var holiday = jsonVar[i].split("-");
+                                    var year, month, day;
+
+                                    if (jsonVar[i].split("-").length > 1) {
+                                        year = jsonVar[i].split("-")[0];
+                                        month = jsonVar[i].split("-")[1];
+                                        if (jsonVar[i].split("-")[2] > 9) {
+                                            day = parseInt(jsonVar[i].split("-")[2]) + 1;
+                                        } else {
+                                            day = parseInt(jsonVar[i].split("-")[2]);
+                                        }
+                                    } else {
+                                        year = jsonVar[i].split("/")[2];
+                                        month = jsonVar[i].split("/")[0];
+                                        if (jsonVar[i].split("/")[1] > 9) {
+                                            day = parseInt(jsonVar[i].split("/")[1]) + 1;
+                                        } else {
+                                            day = parseInt(jsonVar[i].split("/")[1]);
+                                        }
+                                    }
+
+
+                                    //console.log("DAY: " + day + " MONTH: " + month + " YEAR: " + year);
+                                    var newDate = year + "-" + month + "-" + day;
+                                    var vr = new Date(newDate).toString().split(year)[0];
+                                    var dateVr = new Date(date).toString().split(year)[0];
+                                    if (dateVr === vr) {
+                                        daysColor = 'weekdaysholidays';
+                                        break;
+                                    }
+                                }
+
+                                if (date.valueOf() < startDate.valueOf() || date.valueOf() > finalDate.valueOf()) {
+                                    daysColor = 'weekdaysinvalid';
+                                    dayDisabled = true;
+                                }
+
+                                return {
+                                    disabled: dayDisabled,
+                                    className: daysColor
+                                }
+                            },
+                            starts: 0
+                        });
+                    });
+					$("#leyend").attr("style", "block;margin: 0 auto;padding-top: 12px;");
+                }
+            });
+
+        });
+
+    </script>
+    <style type="text/css" media="screen">
+        .weekends-leyend {
+            background: yellow;
+			border: solid 1px;
+			border-radius: 20px;
+        }
+		.weekdaysholidays-leyend {
+            background: orange;
+			border: solid 1px;
+			border-radius: 20px;
+        }
+		.weekdays-leyend {
+            background: green;
+			border: solid 1px;
+			border-radius: 20px;
+        }
+		
+		.weekends {
+            background: yellow;
+            color: grey;
+        }
+
+        .weekends a {
+            color: grey !important;
+        }
+
+        .weekdaysholidays {
+            background: orange;
+        }
+
+        .weekdays {
+            background: green;
+        }
+
+        .weekdaysinvalid {
+            background: grey;
+            color: grey;
+        }
+		.datepicker{
+			margin: 0 auto;
+		}
+    </style>
 </head>
 <body>
-    <div 
-		<h3>Test</h3>
-		<input type="text" name="startDate" id="startDate">
-		<input type="text" name="numberDays" id="numberDays">
-		<input type="text" name="countryCode" id="countryCode">
-		<button type="botton" id="click">Click</button>
-        <p id="dateTest"></p>
-      
+<div class="col-md-12 row">
+    <div class="col-md-12">
+        <h1>UI PROGRAMMING EXERCISE</h1>
     </div>
+
+    <div class="col-md-4">
+        <label>Start Date:</label>
+        <input placeholder="Example: 8/15/2008 - 2008-08-15" class="form-control" type="text" name="startDate"
+               id="startDate">
+    </div>
+    <div class="col-md-4">
+        <label>Number of days:</label>
+        <input placeholder="Example:17" class="form-control" type="text" name="numberDays" id="numberDays">
+    </div>
+    <div class="col-md-4">
+        <label>Country Code:</label>
+        <input placeholder="Example: US" class="form-control" type="text" name="countryCode" id="countryCode">
+    </div>
+    <div class="col-md-12" style="padding-top: 20px;">
+        <button type="botton" class="btn btn-primary" id="click">Click Me!</button>
+    </div>
+</div>
+<div class="col-md-12 row">
+        <div id="dateTest" style="padding-top: 30px;" class="col-md-12"></div>
+</div>
+<div id="leyend" style="display:none;" class="col-md-2 row">
+	<div style="boder:1px;" class="col-md-12">
+		<div class="col-md-12 weekends-leyend" style="boder:1px;">
+			<strong>Weekends</strong>
+		</div>
+	</div	>
+	<div style="boder:1px;" class="col-md-12">
+		<div class="col-md-12 Weekdaysholidays-leyend" style="boder:1px;">
+			<strong>Weekdays holidays</strong>
+		</div>
+	</div	>
+	<div style="boder:1px;" class="col-md-12">
+		<div class="col-md-12 Weekdays-leyend" style="boder:1px;">
+			<strong>Weekdays</strong>
+		</div>
+	</div	>
+</div>
 </body>
 </html>
